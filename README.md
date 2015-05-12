@@ -12,4 +12,4 @@ Run browserify index.js -o build/bundle.js
 Run
 ==========
 
-Open index.html
+Open index.html in your browser

@@ -1,0 +1,29 @@
+{
+  "name": "game",
+  "version": "1.0.0",
+  "description": "SUGIS =====",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "tzbee",
+  "license": "MIT",
+  "jshintConfig": {
+    "strict": "false"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [
+    "html5",
+    "game"
+  ],
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "jshintConfig": {
+    "node": true,
+    "strict": false,
+    "mocha": true
+  }
+}

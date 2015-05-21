@@ -1,6 +1,7 @@
 var cache = {};
 
 module.exports.load = function(urls, done) {
+	urls = urls || [];
 	urls = typeof urls === 'string' ? [urls] : urls;
 	var urlLoadedCounter = 0;
 

@@ -1,4 +1,5 @@
 var resources = require('./resources');
+var Timer = require('./timer.js');
 
 function Frame(img, sPos, sSize) {
 	this.img = img;
@@ -12,23 +13,6 @@ function Frame(img, sPos, sSize) {
 
 	this.render = function(ctx, x, y) {
 		ctx.drawImage(this.img, sx, sy, swidth, sheight, x, y, swidth, sheight);
-	};
-}
-
-function Timer(tick, cb) {
-	this._t = 0;
-
-	this.update = function(dt) {
-		this._t += dt;
-
-		if (this._t >= tick) {
-			cb();
-			this.reset();
-		}
-	};
-
-	this.reset = function() {
-		this._t = 0;
 	};
 }
 

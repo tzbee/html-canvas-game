@@ -1,7 +1,5 @@
-var c = require('./entities/character');
-var hero = require('./entities/hero');
+var Entity = require('./entities/entity');
 var resources = require('./resources');
-var Wave = require('./wave');
 
 module.exports = Game;
 
@@ -37,20 +35,21 @@ function Game(ctx) {
 	var grassPattern;
 
 	function init(done) {
-		resources.load(['img/rpg.png', 'img/bullet2.png', 'img/grass.jpg'], function() {
+		resources.load(['img/rpg.png', 'img/bullet2.png', 'img/grass.jpg', 'img/bubble.gif'], function() {
 
-			//Create main entities
-			var jon = hero.create(self, [200, 400], 'right');
-			var rob = hero.create(self, [600, 200], 'left');
+			// Create main entities
+			var jon = new Entity({
+				game: self,
+				pos: [300, 400],
+			});
 
 			// Add entities to the game
 			self.entities.push(jon);
-			self.entities.push(rob);
 
-			jon.moveTo(rob.pos);
+			jon.destination = [100, 200];
 
 			// Load background pattern
-			grassPattern = ctx.createPattern(resources.get('img/grass.jpg'), "repeat");
+			grassPattern = ctx.createPattern(resources.get('img/grass.jpg'), 'repeat');
 
 			done();
 		});
@@ -73,24 +72,12 @@ function Game(ctx) {
 	}
 
 	function update(dt) {
-		checkCollisions();
-
-		var entities = self.entities;
-		var entity;
+		// Make a shallow copy of entities 
+		var entities = self.entities.slice();
 
 		// Update entities
 		for (var i = 0; i < entities.length; i++) {
-			entity = entities[i];
-			entity.update(dt);
-		}
-
-		// Remove inactive entities
-		for (i = 0; i < entities.length; i++) {
-			entity = entities[i];
-			if (!entity.active) {
-				entities.splice(i, 1);
-				i--;
-			}
+			entities[i].update(dt);
 		}
 	}
 

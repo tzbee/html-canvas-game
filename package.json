@@ -9,7 +9,9 @@
   "author": "tzbee",
   "license": "MIT",
   "jshintConfig": {
-    "strict": "false"
+    "node": true,
+    "strict": false,
+    "mocha": true
   },
   "directories": {
     "test": "test"
@@ -21,9 +23,7 @@
   "devDependencies": {
     "mocha": "*"
   },
-  "jshintConfig": {
-    "node": true,
-    "strict": false,
-    "mocha": true
+  "dependencies": {
+    "lodash": "^3.9.1"
   }
 }

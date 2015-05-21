@@ -1,142 +1,100 @@
+var Timer = require('../timer.js');
+
 function Entity(options) {
+	var self = this;
+
 	options = options || {};
 
 	this.game = options.game;
-
 	this.active = true;
-	this.range = options.range || 80;
 
-	this.sideIndex = options.sideIndex || 0;
-
-	this.timers = options.timers ? options.timers.map(function(timer) {
-		timer.cb.bind(this);
-		return timer;
-	}.bind(this)) : [];
+	this.speed = options.speed || 40;
+	this.size = options.size || [10, 10];
 
 	this.pos = options.pos || [10, 10];
-	this.size = options.size || [0, 0];
-	this.speed = options.speed || 40;
-	this.isMoving = options.isMoving || false;
-	this.destination = this.pos.slice();
-	this.distanceLeft = options.distanceLeft || 0;
-	this.direction = options.direction || 'down';
-	this.sprite = options.sprite;
+	this.directions = {
+		down: [false, 0],
+		up: [false, 0],
+		left: [false, 0],
+		right: [false, 0]
+	};
+
+	// Move to random direction every 4 seconds
+	this.moveTimer = new Timer(4, function() {
+		var randomDirection = ['right', 'left', 'up', 'down'][Math.floor(Math.random() * 4)];
+		self.moveDistance(randomDirection, 50);
+	});
+
+	this.copyTimer = new Timer(10, function() {
+		self.copy();
+	});
 }
 
 Entity.prototype.render = function(ctx) {
 	ctx.save();
-	ctx.translate(this.pos[0], this.pos[1]);
-	this.sprite.render(ctx);
+
+	ctx.fillStyle = '#EE0000';
+	ctx.fillRect(this.pos[0], this.pos[1], this.size[0], this.size[1]);
 
 	ctx.restore();
 };
 
 Entity.prototype.update = function(dt) {
-
-	// Update timers
-	for (var i = 0; i < this.timers.length; i++) {
-		this.timers[i].update(dt);
-	}
-
-	// If the entity is moving
-	if (this.isMoving) {
-
-		// Update position
-		this.move(this.direction, dt);
-	}
+	this.copyTimer.update(dt);
+	this.moveTimer.update(dt);
+	this.move(dt);
 };
 
-Entity.prototype.move = function(direction, dt) {
-	var posIndex, modifier;
 
-	if (direction === 'left') {
-		posIndex = 0;
-		modifier = -1;
-	} else if (direction === 'right') {
-		posIndex = 0;
-		modifier = 1;
-	} else if (direction === 'up') {
-		posIndex = 1;
-		modifier = -1;
-	} else if (direction === 'down') {
-		posIndex = 1;
-		modifier = 1;
-	} else {
-		return;
-	}
-
+Entity.prototype.move = function(dt) {
+	var directions = this.directions;
 	var distance = this.speed * dt;
-	this.pos[posIndex] += modifier * distance;
-	this.direction = direction;
-	this.distanceLeft -= distance;
+	var dir;
 
-	if (this.distanceLeft <= 0) {
-		this.isMoving = false;
-		this.distanceLeft = 0;
+	if (directions.left[0]) {
+		this.pos[0] -= distance;
+		dir = directions.left;
+		dir[1] -= distance;
+		dir[0] = dir[1] > 0;
+	}
+	if (directions.right[0]) {
+		this.pos[0] += distance;
+		dir = directions.right;
+		dir[1] -= distance;
+		dir[0] = dir[1] > 0;
+	}
+	if (directions.up[0]) {
+		this.pos[1] -= distance;
+		dir = directions.up;
+		dir[1] -= distance;
+		dir[0] = dir[1] > 0;
+	}
+	if (directions.down[0]) {
+		this.pos[1] += distance;
+		dir = directions.down;
+		dir[1] -= distance;
+		dir[0] = dir[1] > 0;
 	}
 };
 
-Entity.prototype.moveDistance = function(distance, direction) {
-	this.isMoving = true;
-	this.direction = direction;
-	this.distanceLeft = distance;
+Entity.prototype.moveDistance = function(direction, distance) {
+	var dir = this.directions[direction];
+	dir[0] = true;
+	dir[1] = distance;
 };
 
-//Move to the designated position
-Entity.prototype.moveTo = function(pos) {
-	//TODO
+Entity.prototype.copy = function() {
+	var self = this;
+	var game = self.game;
 
-	this.destination = pos;
-	
-	var thisPos = this.pos;
+	var copyEntity = new Entity({
+		game: game,
+		pos: self.pos.slice(),
+		size: self.size.slice(),
+		speed: self.speed
+	});
 
-	var diffPos = [pos[0] - thisPos[0], pos[1] - thisPos[1]];
-
-	if (diffPos[0] > 0) {
-		this.isMoving = true;
-		this.direction = 'left';
-		this.distanceLeft = Math.abs(diffPos[0]);
-	} else if (diffPos[0] < 0) {
-		this.isMoving = true;
-		this.direction = 'right';
-		this.distanceLeft = Math.abs(diffPos[0]);
-	} 
-
-	if (diffPos[1] > 0) {
-		this.isMoving = true;
-		this.direction = 'down';
-		this.distanceLeft = Math.abs(diffPos[1]);
-	} else if (diffPos[1] < 0) {
-		this.isMoving = true;
-		this.direction = 'up';
-		this.distanceLeft = Math.abs(diffPos[1]);
-	}
-};
-
-function Timer(tick, cb) {
-	this.cb = cb;
-	this._t = 0;
-
-	this.update = function(dt) {
-		this._t += dt;
-
-		if (this._t >= tick) {
-			this.cb(dt);
-			this.reset();
-		}
-	};
-
-	this.reset = function() {
-		this._t = 0;
-	};
-}
-
-Entity.prototype.collides = function(entity) {
-	if (this.sideIndex !== entity.sideIndex) {
-		this.active = false;
-		entity.active = false;
-	}
+	game.entities.push(copyEntity);
 };
 
 module.exports = Entity;
-module.exports.Timer = Timer;

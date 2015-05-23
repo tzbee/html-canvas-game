@@ -11,6 +11,8 @@ function Entity(options) {
 	this.speed = options.speed || 40;
 	this.size = options.size || [10, 10];
 
+	this.rgb = options.rgb || [0, 0, 0];
+
 	this.pos = options.pos || [10, 10];
 	this.directions = {
 		down: [false, 0],
@@ -20,20 +22,24 @@ function Entity(options) {
 	};
 
 	// Move to random direction every 4 seconds
-	this.moveTimer = new Timer(4, function() {
+	this.moveTimer = new Timer(1, function() {
 		var randomDirection = ['right', 'left', 'up', 'down'][Math.floor(Math.random() * 4)];
-		self.moveDistance(randomDirection, 50);
+		self.moveDistance(randomDirection, 20);
 	});
 
-	this.copyTimer = new Timer(10, function() {
+	this.copyTimer = new Timer(2, function() {
 		self.copy();
 	});
+}
+
+function toRGBString(rgb) {
+	return 'rgb(' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')';
 }
 
 Entity.prototype.render = function(ctx) {
 	ctx.save();
 
-	ctx.fillStyle = '#EE0000';
+	ctx.fillStyle = toRGBString(this.rgb);
 	ctx.fillRect(this.pos[0], this.pos[1], this.size[0], this.size[1]);
 
 	ctx.restore();
@@ -44,7 +50,6 @@ Entity.prototype.update = function(dt) {
 	this.moveTimer.update(dt);
 	this.move(dt);
 };
-
 
 Entity.prototype.move = function(dt) {
 	var directions = this.directions;
@@ -91,7 +96,8 @@ Entity.prototype.copy = function() {
 		game: game,
 		pos: self.pos.slice(),
 		size: self.size.slice(),
-		speed: self.speed
+		speed: self.speed + 20,
+		rgb: [self.rgb[0] + 20, self.rgb[1] + 20, self.rgb[2] + 20]
 	});
 
 	game.entities.push(copyEntity);
